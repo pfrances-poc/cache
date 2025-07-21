@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Service principal de l'API
+  cache-test-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+      args:
+        BUILD_TIME: "dev-compose"
+        COMMIT_SHA: "local"
+        BRANCH: "local-dev"
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    volumes:
+      # Pour le développement, monter le code source
+      - ./src:/app/src:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Service de développement avec hot-reload (optionnel)
+  cache-test-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    volumes:
+      - ./src:/app/src
+      - ./package*.json:/app/
+      - /app/node_modules  # Volume anonyme pour node_modules
+    command: npm run dev
+    profiles:
+      - dev

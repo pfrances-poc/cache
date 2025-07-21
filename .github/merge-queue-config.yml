@@ -1,0 +1,46 @@
+# Configuration du Merge Queue
+# Ce fichier configure le comportement du merge queue GitHub
+
+# Les règles de protection de branche doivent être configurées dans l'interface GitHub
+# Voici les paramètres recommandés pour ce POC:
+
+merge_group:
+  # Activer le merge queue
+  enabled: true
+
+  # Nombre maximum de PRs dans la queue simultanément
+  max_entries: 5
+
+  # Nombre minimum de PRs à traiter en batch
+  min_entries_for_batch: 2
+
+  # Délai d'attente avant de créer un batch (en secondes)
+  batch_delay: 300 # 5 minutes
+
+  # Validations requises avant merge
+  required_status_checks:
+    - "test" # Le job de test doit passer
+
+  # Auto-merge activé pour les PRs approuvées
+  auto_merge: true
+
+# Configuration des branches protégées (à configurer via l'interface GitHub)
+branch_protection:
+  main:
+    # Require PR reviews
+    required_reviews: 1
+
+    # Require status checks
+    required_status_checks:
+      - "CI/CD Pipeline avec Cache Optimisé / test"
+      - "PR Validation / validate"
+
+    # Require merge queue
+    require_merge_queue: true
+
+    # Restrictions
+    restrict_pushes: true
+    allowed_push_users: [] # Seuls les merge groups peuvent pusher
+
+    # Auto-delete head branches
+    delete_branch_on_merge: true
