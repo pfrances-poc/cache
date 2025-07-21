@@ -43,8 +43,16 @@ app.get('/cache-info', (req, res) => {
   });
 });
 
+// not found handler
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: `The requested resource ${req.originalUrl} was not found`
+  });
+});
+
 // Error handling
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   console.error('Error:', err.message);
   res.status(500).json({
     error: 'Internal server error',
@@ -53,10 +61,36 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🕐 Started at: ${new Date().toISOString()}`);
 });
 
-module.exports = app;
+// Graceful shutdown
+const gracefulShutdown = (signal) => {
+  console.log(`\n📴 Received ${signal}. Starting graceful shutdown...`);
+
+  server.close((err) => {
+    if (err) {
+      console.error('❌ Error during server shutdown:', err);
+      process.exit(1);
+    }
+
+    console.log('✅ Server closed successfully');
+    process.exit(0);
+  });
+
+  // Force close after 10 seconds
+  setTimeout(() => {
+    console.error('⚠️  Forced shutdown after timeout');
+    process.exit(1);
+  }, 10000);
+};
+
+// Handle shutdown signals
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// Export both app and server for testing
+module.exports = { app, server };
