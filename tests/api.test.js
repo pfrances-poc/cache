@@ -1,7 +1,15 @@
 const request = require('supertest');
-const app = require('../src/index');
+const { app, server } = require('../src/index');
 
 describe('Cache Test POC API', () => {
+  // Close server after all tests
+  afterAll((done) => {
+    if (server) {
+      server.close(done);
+    } else {
+      done();
+    }
+  });
   describe('GET /', () => {
     it('should return API information', async () => {
       const response = await request(app).get('/');
