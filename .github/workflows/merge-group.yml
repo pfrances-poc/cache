@@ -2,6 +2,8 @@ name: Build and Push to GHCR on Merge Group
 
 on:
   merge_group:
+    branches:
+      - main     
 
 env:
   REGISTRY: ghcr.io
